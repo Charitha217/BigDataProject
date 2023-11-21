@@ -23,18 +23,6 @@ kafka_producer = KafkaProducer(bootstrap_servers=f'{kafka_ip}:9092',value_serial
 # Kafka consumer for commands
 kafka_consumer = KafkaConsumer('orchestrator_commands_topic', bootstrap_servers=f'{kafka_ip}:9092', api_version=(0, 11, 5), value_deserializer=lambda x: json.loads(x.decode('utf-8')))
 
-'''def process_commands():
-    # Subscribe to orchestrator commands
-    for message in command_consumer:
-        # Process the received command
-        command = json.loads(message.value)
-        print(f"Node {node_id} received command: {command}")
-
-
-# Process commands from the orchestrator
-process_commands()
-'''
-
 if __name__ == '__main__':
     # Unique ID for the node
     node_id = str(uuid.uuid4())

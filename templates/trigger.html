@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Trigger</title>
+</head>
+<body>
+    <h1>Trigger</h1>
+    <p>Test ID: {{ data['test_id'] }}</p>
+    <p>Test Type: {{ data['test_type'] }}</p>
+    <p>Test Message Delay: {{ data['test_message_delay'] }}</p>
+    <p>Message Count Per Driver: {{ data['message_count_per_driver'] }}</p>
+    <form method="POST" action="{{url_for('send_trigger')}}">
+        <button type="Submit">Start</button>
+    </form>
+</body>
+</html>
