@@ -43,13 +43,12 @@ def testconfig():
 @app.route('/post_testconfig',methods=['POST'])
 def post_testconfig():
     global test_config
-    testid = str(uuid.uuid4())
-    test_config['test_id']= testid,
-    test_config['test_type']=request.form['test_type']
-    test_config['test_message_delay']=request.form['test_message_delay']
-    if(test_config['test_type']=="AVALANCHE"):
-        test_config['test_message_delay']=0
-    test_config['message_count_per_driver']=request.form['message_count_per_driver']
+    test_config["test_id"]= str(uuid.uuid4())
+    test_config["test_type"]=request.form['test_type']
+    test_config["test_message_delay"]=request.form['test_message_delay']
+    if(test_config["test_type"]=="AVALANCHE"):
+        test_config["test_message_delay"]=0
+    test_config["message_count_per_driver"]=request.form['message_count_per_driver']
     print(test_config)
     try:
         kafka_producer.send(topic2,test_config)
@@ -66,8 +65,8 @@ def trigger():
 def send_trigger():
     global test_config
     trigger_msg=defaultdict(dict)
-    trigger_msg['test_id']=test_config['test_id']
-    trigger_msg['trigger']="YES"
+    trigger_msg["test_id"]=test_config["test_id"]
+    trigger_msg["trigger"]="YES"
     try:
         kafka_producer.send(topic3,trigger_msg)
     except Exception as e:
@@ -88,8 +87,7 @@ def kafka_listener():
                 node_dict=json.loads(message.value)
                 register_node(node_dict['node_id'], node_dict['node_ip'])
                 break
-        print(driver_nodes)
-
+        
 if __name__ == '__main__':
     
     app.run(host='127.0.0.1', port=5000, debug=True)  # Start the Flask app
