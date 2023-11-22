@@ -6,6 +6,7 @@ import requests
 import uuid
 import sys
 import json
+from threading import Thread
 
 topic1 = 'register'
 topic2 = 'test_config'
@@ -13,16 +14,8 @@ topic3 = 'trigger'
 topic4 = 'metrics'
 topic5 = 'heartbeat'
 
-# Get Kafka and Orchestrator IP Addresses from command-line arguments
-kafka_ip = sys.argv[1]
-orchestrator_ip = sys.argv[2]
+
 #active_nodes_list=[]
-
-# Kafka producer for registration
-kafka_producer = KafkaProducer(bootstrap_servers=f'{kafka_ip}:9092',value_serializer=lambda v: json.dumps(v).encode('utf-8'))
-
-# Kafka consumer for commands
-kafka_consumer = KafkaConsumer(topic1,topic2,topic3,topic4,topic5, bootstrap_servers=f'{kafka_ip}:9092', api_version=(0, 11, 5), value_deserializer=lambda x: json.loads(x.decode('utf-8')))
 
 def send_request(target_server_url):
     start_time = time.time()
@@ -72,9 +65,18 @@ def start_test(node_id,test_config,target_server_url):
         avalanche_test(node_id,test_config,target_server_url)
     else:
         tsunami_test(node_id,test_config,target_server_url)
-
+        
+def htbt(node_id):
+    while(True):
+        hb={}
+        hb["node_id"]= node_id
+        hb["heartbeat"]= "YES"
+        hb["timestamp"]= time.time()
+        print(hb)
+        kafka_producer.send(topic5,json.dumps(hb))
+        time.sleep(2)
+    
 def kafka_listener(node_id):
-    active_nodes_list=[]
     test_config={}
     trig={}
     for message in kafka_consumer:
@@ -88,11 +90,19 @@ def kafka_listener(node_id):
                     start_test(node_id,test_config,'http://127.0.0.1:8000/ping')
 
 if __name__ == '__main__':
+    kafka_ip = sys.argv[1]
+    node_ip = sys.argv[2]
+    # Kafka producer for registration
+    kafka_producer = KafkaProducer(bootstrap_servers=f'{kafka_ip}',value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+
+    # Kafka consumer for commands
+    kafka_consumer = KafkaConsumer(topic1,topic2,topic3,topic4,topic5, bootstrap_servers=f'{kafka_ip}', api_version=(0, 11, 5), value_deserializer=lambda x: json.loads(x.decode('utf-8')))
+
     # Unique ID for the node
     node_id = str(uuid.uuid4())
     register_node={
         "node_id": node_id,
-        "node_ip": "http://127.0.0.1:5010",
+        "node_ip": node_ip,
         "message_type": "DRIVER_NODE_REGISTER"
     }
     try:
@@ -102,4 +112,8 @@ if __name__ == '__main__':
         print(str(e))
     kafka_producer.flush()
     
+    heartbeat = Thread(target=htbt(node_id))
+    heartbeat.daemon = True
+    heartbeat.start()
+
     kafka_listener(node_id)
