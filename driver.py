@@ -41,7 +41,7 @@ def send_metrics(node_id,test_config,latencies):
     msg["metrics"]["median_latency"]=statistics.median(latencies)
     msg["metrics"]["min_latency"]=min(latencies)
     msg["metrics"]["max_latency"]=max(latencies)
-    kafka_producer.send(topic1,msg)
+    kafka_producer.send(topic4,msg)
     print(msg)
     kafka_producer.flush()
 
@@ -52,8 +52,8 @@ def avalanche_test(node_id,test_config,target_server_url):
     while request_count<count:
         latency = send_request(target_server_url)
         latencies.append(latency)
-        send_metrics(node_id,test_config,latencies)
         request_count += 1
+    send_metrics(node_id,test_config,latencies)
         
 def tsunami_test(node_id,test_config,target_server_url):
     latencies = []
@@ -63,10 +63,9 @@ def tsunami_test(node_id,test_config,target_server_url):
     while request_count<count:
         latency = send_request(target_server_url)
         latencies.append(latency)
-        send_metrics(node_id,test_config,latencies)
         request_count += 1
         time.sleep(delay)
-    
+    send_metrics(node_id,test_config,latencies)
 
 def start_test(node_id,test_config,target_server_url):
     if(test_config["test_type"]=='AVALANCHE'):

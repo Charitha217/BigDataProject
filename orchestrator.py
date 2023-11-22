@@ -29,17 +29,15 @@ kafka_consumer = KafkaConsumer(topic1, topic2, topic3, topic4, topic5, bootstrap
 def welc_pg():
     return 'Welcome to Distributed Load Testing System'
 
-@app.route('/register')
-def register():
-    global driver_nodes
+@app.route('/listener')
+def listener():
     kafka_listener()
-    print(driver_nodes)
-    return jsonify({"Register a node"})
+    return jsonify({"Listening"})
 
 @app.route('/active-nodes')
 def active_nodes():
     global driver_nodes
-    return jsonify({"active_nodes": list(driver_nodes)})
+    return render_template('nodes.html',data=driver_nodes)
     
 @app.route('/testconfig')
 def testconfig():
@@ -78,20 +76,34 @@ def send_trigger():
         print(e)
     return '<h1> Trigger raised successfully</h1'
 
+@app.route('/dashboard')
+def dashboard():
+    global driver_nodes
+    return render_template('metrics.html',data=driver_nodes)
+
 def register_node(node_id, node_ip):
     global driver_nodes
-    driver_nodes[node_id]['node_ip']=node_ip      # To store ip address
-    driver_nodes[node_id]['test_config'] = {}    # Store test configuration
-    driver_nodes[node_id]['metrics'] = {}
+    driver_nodes[node_id]["node_ip"]=node_ip      # To store ip address
+    driver_nodes[node_id]["test_config"] = {}    # Store test configuration
+    driver_nodes[node_id]["metrics"] = {}
 
-def kafka_listener():
+def update_metrics(dict):
     global driver_nodes
+    node_id=dict["node_id"]
+    driver_nodes[node_id]["metrics"]=dict["metrics"]
+       
+def kafka_listener():
     for message in kafka_consumer:
         if message.topic == topic1:
+            print("Hello")
             if(isinstance(message.value,str)):
                 node_dict=json.loads(message.value)
                 register_node(node_dict['node_id'], node_dict['node_ip'])
-        
+        if message.topic==topic4:
+            print("Hi")
+            print(message.value)
+            update_metrics(message.value)        
+    
 if __name__ == '__main__':
     
     app.run(host='127.0.0.1', port=5000, debug=True)  # Start the Flask app

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="refresh" content="1" />
+    <title>Metrics</title>
+</head>
+<body>
+    <h1>Metrics</h1>
+    <br><br><br>
+    {% for key, value in data.items() %}
+        <p>{{ key }}</p>
+        <p>{{ value }}</p>
+        <br><br>
+    {% endfor %}
+</body>
+</html>
