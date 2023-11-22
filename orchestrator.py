@@ -29,13 +29,18 @@ kafka_consumer = KafkaConsumer(topic1, topic2, topic3, topic4, topic5, bootstrap
 def welc_pg():
     return 'Welcome to Distributed Load Testing System'
 
-@app.route('/active-nodes')
-def active_nodes():
+@app.route('/register')
+def register():
     global driver_nodes
     kafka_listener()
     print(driver_nodes)
-    return jsonify({"active_nodes": list(driver_nodes)})
+    return jsonify({"Register a node"})
 
+@app.route('/active-nodes')
+def active_nodes():
+    global driver_nodes
+    return jsonify({"active_nodes": list(driver_nodes)})
+    
 @app.route('/testconfig')
 def testconfig():
     return render_template('testconfig.html')
@@ -86,7 +91,6 @@ def kafka_listener():
             if(isinstance(message.value,str)):
                 node_dict=json.loads(message.value)
                 register_node(node_dict['node_id'], node_dict['node_ip'])
-                break
         
 if __name__ == '__main__':
     

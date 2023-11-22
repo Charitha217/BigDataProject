@@ -102,4 +102,5 @@ if __name__ == '__main__':
     except Exception as e:
         print(str(e))
     kafka_producer.flush()
+    
     kafka_listener(node_id)
