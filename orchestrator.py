@@ -41,7 +41,7 @@ def active_nodes():
     global heartbeat
     #print(heartbeat)
     for i in heartbeat.keys():
-        if (time.time()-heartbeat[i])>5:
+        if i in driver_nodes.keys() and (time.time()-heartbeat[i])>5:
             #print(time.time()-heartbeat[i])
             driver_nodes.pop(i)
     return render_template('nodes.html',data=driver_nodes)
@@ -93,10 +93,10 @@ def dashboard():
 
 def register_node(dict):
     global driver_nodes
-    node_id=dict['node_id']
+    node_id=dict["node_id"]
     for i in driver_nodes.values():
-        if i["node_ip"]==dict['node_ip']:
-            break
+        if i["node_ip"]==dict["node_ip"]:
+            return
     driver_nodes[node_id]["node_ip"]=dict['node_ip']   # To store ip address
     driver_nodes[node_id]["test_config"] = {}   # Store test configuration
     driver_nodes[node_id]["metrics"] = {}
