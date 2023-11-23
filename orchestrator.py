@@ -91,14 +91,21 @@ def dashboard():
     global driver_nodes
     avg_metrics={}
     metrics_values = [node['metrics'] for node in driver_nodes.values()]
-    mean_list=[metrics['mean_latency'] for metrics in metrics_values]
-    median_list=[metrics['median_latency'] for metrics in metrics_values]
-    max_list=[metrics['max_latency'] for metrics in metrics_values]
-    min_list=[metrics['min_latency'] for metrics in metrics_values]
-    avg_metrics['mean_latency'] = statistics.mean(mean_list) if mean_list else 0
-    avg_metrics['median_latency'] = statistics.mean(median_list) if median_list else 0
-    avg_metrics['min_latency'] = min(mean_list) if mean_list else 0
-    avg_metrics['max_latency'] = max(mean_list) if mean_list else 0
+    print(metrics_values)
+    mean_list=[]
+    median_list=[]
+    min_list=[]
+    max_list=[]
+    for metrics in metrics_values:
+        if metrics:
+            mean_list.append(metrics['mean_latency'])
+            median_list.append(metrics['median_latency'])
+            min_list.append(metrics['min_latency'])
+            max_list.append(metrics['min_latency'])
+    avg_metrics['mean_latency'] = statistics.mean(mean_list) if mean_list else 'Inf'
+    avg_metrics['median_latency'] = statistics.mean(median_list) if median_list else 'Inf'
+    avg_metrics['min_latency'] = min(min_list) if min_list else 'Inf'
+    avg_metrics['max_latency'] = max(max_list) if max_list else 'Inf'
     print(driver_nodes)
     return render_template('metrics.html',data=driver_nodes,avg=avg_metrics)
 
