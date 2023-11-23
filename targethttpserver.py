@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -13,10 +13,9 @@ def index():
 def ping():
     global request_count
     global response_count
-
+    
     request_count += 1
     response_count += 1
-
     return jsonify({'message': 'pong'})
 
 @app.route('/metrics')

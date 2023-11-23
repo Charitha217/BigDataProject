@@ -111,10 +111,8 @@ def dashboard():
 
 def register_node(dict):
     global driver_nodes
+    print(dict)
     node_id=dict["node_id"]
-    for i in driver_nodes.values():
-        if i["node_ip"]==dict["node_ip"]:
-            return
     driver_nodes[node_id]["node_ip"]=dict['node_ip']   # To store ip address
     driver_nodes[node_id]["test_config"] = {}   # Store test configuration
     driver_nodes[node_id]["metrics"] = {}

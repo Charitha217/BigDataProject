@@ -7,6 +7,7 @@ import uuid
 import sys
 import json
 from threading import Thread
+#from requests_toolbelt.adapters import source
 
 topic1 = 'register'
 topic2 = 'test_config'
@@ -17,9 +18,9 @@ topic5 = 'heartbeat'
 
 #active_nodes_list=[]
 
-def send_request(target_server_url):
+def send_request():
     start_time = time.time()
-    response = requests.get(target_server_url) # Sending GET request to target server
+    _ = requests.get('http://127.0.0.1:8000/ping') # Sending GET request to target server
     end_time = time.time()
     latency = (end_time - start_time) * 1000  # Convert to milliseconds
     return latency
@@ -38,33 +39,33 @@ def send_metrics(node_id,test_config,latencies):
     print(msg)
     kafka_producer.flush()
 
-def avalanche_test(node_id,test_config,target_server_url):
+def avalanche_test(node_id,test_config):
     latencies = []
     request_count = 0
     count=int(test_config["message_count_per_driver"])
     while request_count<count:
-        latency = send_request(target_server_url)
+        latency = send_request()
         latencies.append(latency)
         request_count += 1
     send_metrics(node_id,test_config,latencies)
         
-def tsunami_test(node_id,test_config,target_server_url):
+def tsunami_test(node_id,test_config):
     latencies = []
     request_count = 0
     delay=int(test_config["test_message_delay"])
     count=int(test_config["message_count_per_driver"])
     while request_count<count:
-        latency = send_request(target_server_url)
+        latency = send_request()
         latencies.append(latency)
         request_count += 1
         time.sleep(delay)
     send_metrics(node_id,test_config,latencies)
 
-def start_test(node_id,test_config,target_server_url):
+def start_test(node_id,test_config):
     if(test_config["test_type"]=='AVALANCHE'):
-        avalanche_test(node_id,test_config,target_server_url)
+        avalanche_test(node_id,test_config)
     else:
-        tsunami_test(node_id,test_config,target_server_url)
+        tsunami_test(node_id,test_config)
         
 def htbt(node_id):
     while(True):
@@ -88,18 +89,23 @@ def kafka_listener(node_id):
             trig=message.value
             print(trig)
             if(trig["trigger"]=="YES"):
-                    start_test(node_id,test_config,'http://127.0.0.1:8000/ping')
+                    start_test(node_id,test_config)
 
 if __name__ == '__main__':
+    if len(sys.argv) != 3:
+        print("Usage: python driver.py <kafka_ip:port> ")
+        sys.exit(1)
     kafka_ip = sys.argv[1]
     node_ip = sys.argv[2]
+    # session = requests.Session()
+    # session.source_address=node_id
     # Kafka producer for registration
     kafka_producer = KafkaProducer(bootstrap_servers=f'{kafka_ip}',value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
-    # Kafka consumer for commands
+# Kafka consumer for commands
     kafka_consumer = KafkaConsumer(topic1,topic2,topic3,topic4,topic5, bootstrap_servers=f'{kafka_ip}', api_version=(0, 11, 5), value_deserializer=lambda x: json.loads(x.decode('utf-8')))
 
-    # Unique ID for the node
+# Unique ID for the node
     node_id = str(uuid.uuid4())
     register_node={
         "node_id": node_id,
