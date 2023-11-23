@@ -72,13 +72,14 @@ def htbt(node_id):
         hb["node_id"]= node_id
         hb["heartbeat"]= "YES"
         hb["timestamp"]= time.time()
-        print(hb)
+        #print(hb)
         kafka_producer.send(topic5,json.dumps(hb))
         time.sleep(2)
     
 def kafka_listener(node_id):
     test_config={}
     trig={}
+    print("Hello")
     for message in kafka_consumer:
         if message.topic == topic2:
             test_config=message.value
@@ -112,7 +113,7 @@ if __name__ == '__main__':
         print(str(e))
     kafka_producer.flush()
     
-    heartbeat = Thread(target=htbt(node_id))
+    heartbeat = Thread(target=htbt,args=(node_id,))
     heartbeat.daemon = True
     heartbeat.start()
 

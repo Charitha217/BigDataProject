@@ -1,7 +1,7 @@
 from kafka import KafkaProducer,KafkaConsumer
 import time
 import uuid
-import json
+import json,statistics
 from flask import Flask, render_template,request, jsonify
 from collections import defaultdict
 
@@ -89,7 +89,18 @@ def send_trigger():
 @app.route('/dashboard')
 def dashboard():
     global driver_nodes
-    return render_template('metrics.html',data=driver_nodes)
+    avg_metrics={}
+    metrics_values = [node['metrics'] for node in driver_nodes.values()]
+    mean_list=[metrics['mean_latency'] for metrics in metrics_values]
+    median_list=[metrics['median_latency'] for metrics in metrics_values]
+    max_list=[metrics['max_latency'] for metrics in metrics_values]
+    min_list=[metrics['min_latency'] for metrics in metrics_values]
+    avg_metrics['mean_latency'] = statistics.mean(mean_list) if mean_list else 0
+    avg_metrics['median_latency'] = statistics.mean(median_list) if median_list else 0
+    avg_metrics['min_latency'] = min(mean_list) if mean_list else 0
+    avg_metrics['max_latency'] = max(mean_list) if mean_list else 0
+    print(driver_nodes)
+    return render_template('metrics.html',data=driver_nodes,avg=avg_metrics)
 
 def register_node(dict):
     global driver_nodes
